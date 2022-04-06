@@ -6,14 +6,14 @@ class UserDAO(private val c: Connection) {
     companion object {
         private const val SCHEMA = "ALUMNO"
         private const val TABLE = "LIBROS"
-        private const val TRUNCATE_TABLE_USERS_SQL = "TRUNCATE TABLE LIBROS"
+        private const val TRUNCATE_TABLE_LIBROS_SQL = "TRUNCATE TABLE LIBROS"
         private const val CREATE_TABLE_LIBROS_SQL =
-         "CREATE TABLE LIBROS (id  number(2) primary key,autor varchar2(120) NOT NULL, título varchar2(220) NOT NULL)"
-        private const val INSERT_LIBROS_SQL = "INSERT INTO LIBROS (id,autor,titulo,genero,precio,fecha,desc ,) VALUES (?,?,?,?,?,?,?)"
-        private const val SELECT_LIBROS_BY_ID =" select id,autor,titulo from LIBROS where id =?"
+         "CREATE TABLE LIBROS (id NUMERIC(3) NOT NULL ,autor varchar(120) NOT NULL, titulo varchar(220) NOT NULL, genero varchar(100), precio number(4), descr varchar(200),PRIMARY KEY (id) )"
+        private const val INSERT_LIBROS_SQL = "INSERT INTO LIBROS (id,autor,titulo,genero,precio,descr) VALUES (?,?,?,?,?,?)"
+        private const val SELECT_LIBROS_BY_ID ="select * from LIBROS where id=?"
         private const val SELECT_ALL_LIBROS = "select * from LIBROS"
         private const val DELETE_LIBROS_SQL = "delete from LIBROS where id = ?"
-        private const val UPDATE_LIBROS_SQL = "update LIBROS set  autor = ?,titulo= ? where id = ?"
+        private const val UPDATE_LIBROS_SQL = "update LIBROS set  autor = ? ,titulo= ? where id = ?"
     }
 
 
@@ -24,11 +24,11 @@ class UserDAO(private val c: Connection) {
     }
 
     private fun truncateTable() {
-        println(TRUNCATE_TABLE_USERS_SQL)
+        println(TRUNCATE_TABLE_LIBROS_SQL)
         // try-with-resource statement will auto close the connection.
         try {
             c.createStatement().use { st ->
-                st.execute(TRUNCATE_TABLE_USERS_SQL)
+                st.execute(TRUNCATE_TABLE_LIBROS_SQL)
             }
             //Commit the change to the database
             c.commit()
@@ -63,6 +63,9 @@ class UserDAO(private val c: Connection) {
                 st.setInt(1, user.id)
                 st.setString(2, user.autor)
                 st.setString(3, user.titulo)
+                st.setString(4,user.genero)
+                st.setDouble(5,user.precio)
+                st.setString(6,user.descr)
                 st.executeUpdate()
             }
             //Commit the change to the database
@@ -80,6 +83,8 @@ class UserDAO(private val c: Connection) {
         try {
             c.prepareStatement(SELECT_LIBROS_BY_ID).use { st ->
                 st.setInt(1, id)
+
+
                 // Step 3: Execute the query or update query
                 val rs = st.executeQuery()
 
@@ -90,9 +95,8 @@ class UserDAO(private val c: Connection) {
                     val titulo = rs.getString("titulo")
                     val genero = rs.getString("genero")
                     val precio = rs.getDouble("precio")
-                    val fecha = rs.getString("fecha")
-                    val desc = rs.getString("desc")
-                    user = Libros(id, name, titulo,genero,precio,fecha,desc)
+                    val desc = rs.getString("descr")
+                    user = Libros(id, name, titulo,genero,precio,desc)
                 }
             }
 
@@ -119,10 +123,9 @@ class UserDAO(private val c: Connection) {
                     var titulo = rs.getString("titulo")
                     var genero = rs.getString("genero")
                     var precio = rs.getDouble("precio")
-                    var fecha = rs.getString("fecha")
-                    var desc = rs.getString("descripcion")
+                    var desc = rs.getString("descr")
 
-                    users = Libros(id, name, titulo,genero,precio,fecha,desc)
+                    users.add(Libros(id, name, titulo, genero,precio,desc))
                 }
             }
 
